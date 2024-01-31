@@ -1,15 +1,17 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
+    <h1>Marfil Velazquez Angel Gabriel</h1>
+    <h3>IDYGS82</h3>
   </div>
 </template>
 
 <style>
-@media (min-width: 1024px) {
   .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
+    margin-top: 3rem;
+    text-align: center;
+    margin-bottom: 13rem;
+    font-family: 'Bakbak One';
+    font-size: 1.2rem;
+    color: var(--secondary-color);
   }
-}
 </style>
