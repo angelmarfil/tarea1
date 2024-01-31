@@ -64,6 +64,7 @@ const validateForm = () => {
 const handleSubmit = () => {
   if (isFormValid.value) {
     console.log('Formulario válido. Enviar datos...')
+    alert('Formulario válido.')
   }
 }
 </script>
