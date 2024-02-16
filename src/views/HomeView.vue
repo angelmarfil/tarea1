@@ -1,65 +1,48 @@
 <script setup lang="ts">
-import type { Ref } from 'vue'
-import { ref, nextTick } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const name: Ref<string> = ref('')
+
+const nameValidation = computed(() =>
+  (name.value.length > 0 && name.value.length < 5) || name.value.length > 18
+    ? 'Error de longitud en el nombre (mínimo 5, máximo 18 caracteres)'
+    : ''
+)
+
 const lastName: Ref<string> = ref('')
+
+const lastNameValidation = computed(() =>
+  lastName.value.length > 0 && lastName.value === name.value
+    ? 'El apellido no puede ser igual al nombre'
+    : ''
+)
+
 const age: Ref<string> = ref('')
+
+const ageValidation = computed(() =>
+  (age.value !== '' && age.value <= '0') || age.value >= '60'
+    ? 'Error en la edad (debe ser mayor a 0 y menor a 60)'
+    : ''
+)
+
 const gender: Ref<string> = ref('masculino')
+
+const genderValidation = computed(() =>
+  gender.value === 'otro' && !otherGender.value ? 'Debe especificar el género.' : ''
+)
+
 const otherGender: Ref<string> = ref('')
-const isFormValid = ref(true)
 
-const errors: Ref<Record<string, string>> = ref({})
-
-const validation = (field: string) => {
-  errors.value = { ...errors.value, [field]: '' }
-
-  switch (field) {
-    case 'name':
-      if (name.value.length < 5 || name.value.length > 18) {
-        errors.value[field] = 'Error de longitud en el nombre (mínimo 5, máximo 18 caracteres).'
-      }
-      break
-
-    case 'lastName':
-      if (lastName.value === name.value) {
-        errors.value[field] = 'El apellido no puede ser igual al nombre.'
-      }
-      break
-
-    case 'age':
-      if (age.value !== '' && (age.value <= '0' || age.value >= '60')) {
-        errors.value[field] = 'Error en la edad (debe ser mayor a 0 y menor a 60).'
-      }
-      break
-
-    case 'gender':
-      if (gender.value === 'otro' && (!otherGender.value || otherGender.value.trim() === '')) {
-        errors.value['gender'] = "Especificar género si selecciona 'Otro'."
-      } else {
-        errors.value['otherGender'] = ''
-      }
-      break
-
-    case 'otherGender':
-      if (gender.value === 'otro' && (!otherGender.value || otherGender.value.trim() === '')) {
-        errors.value[field] = 'Debe especificar el género.'
-      } else {
-        errors.value['gender'] = ''
-      }
-      break
-
-    default:
-      break
-  }
-  validateForm()
-}
-
-const validateForm = () => {
-  nextTick(() => {
-    isFormValid.value = Object.values(errors.value).every((error) => error === '')
-  })
-}
+const isFormValid: ComputedRef<boolean> = computed(
+  () =>
+    !(
+      nameValidation.value.length > 0 ||
+      lastNameValidation.value.length > 0 ||
+      ageValidation.value.length > 0 ||
+      genderValidation.value.length > 0
+    )
+)
 
 const handleSubmit = () => {
   if (isFormValid.value) {
@@ -75,43 +58,36 @@ const handleSubmit = () => {
     <form @submit.prevent="handleSubmit">
       <div>
         <label for="name">Nombre:</label>
-        <input @input="validation('name')" v-model="name" type="text" id="name" required />
-        <span v-if="errors.name" class="error">{{ errors.name }}</span>
+        <input v-model.trim="name" type="text" id="name" required />
+        <span v-if="nameValidation" class="error">{{ nameValidation }}</span>
       </div>
 
       <div>
         <label for="lastName">Apellido:</label>
-        <input
-          @input="validation('lastName')"
-          v-model="lastName"
-          type="text"
-          id="lastName"
-          required
-        />
-        <span v-if="errors.lastName" class="error">{{ errors.lastName }}</span>
+        <input v-model.trim="lastName" type="text" id="lastName" required />
+        <span v-if="lastNameValidation" class="error">{{ lastNameValidation }}</span>
       </div>
 
       <div>
         <label for="age">Edad:</label>
-        <input @input="validation('age')" v-model="age" type="number" id="age" required />
-        <span v-if="errors.age" class="error">{{ errors.age }}</span>
+        <input v-model="age" type="number" id="age" required />
+        <span v-if="ageValidation" class="error">{{ ageValidation }}</span>
       </div>
 
       <div>
         <label for="gender">Género:</label>
-        <select v-model="gender" @change="validation('gender')" id="gender">
+        <select v-model="gender" id="gender">
           <option value="masculino">Masculino</option>
           <option value="femenino">Femenino</option>
           <option value="otro">Otro</option>
         </select>
         <input
           v-if="gender === 'otro'"
-          @input="validation('otherGender')"
-          v-model="otherGender"
+          v-model.trim="otherGender"
           type="text"
           placeholder="Especificar género"
         />
-        <span v-if="errors.gender" class="error">{{ errors.gender }}</span>
+        <span v-if="genderValidation" class="error">{{ genderValidation }}</span>
       </div>
 
       <button :disabled="!isFormValid" type="submit">Enviar!</button>
